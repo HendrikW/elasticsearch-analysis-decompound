@@ -48,7 +48,11 @@ public class DecompoundTokenFilter extends TokenFilter {
             restoreState(current);
             termAtt.setEmpty().append(token.txt);
             offsetAtt.setOffset(token.startOffset, token.endOffset);
-            posIncAtt.setPositionIncrement(1);
+	    if (token.position == 0) {
+		posIncAtt.setPositionIncrement(0);
+	    } else {
+		posIncAtt.setPositionIncrement(1);
+	    }
             return true;
         }
         if (input.incrementToken()) {
@@ -65,10 +69,12 @@ public class DecompoundTokenFilter extends TokenFilter {
     protected void decompound() {
         int start = offsetAtt.startOffset();
         CharSequence term = new String(termAtt.buffer(), 0, termAtt.length());
+	int ctr = 0;
         for (String s : decomp.decompound(term.toString())) {
+	    ctr++;
             start = term.toString().indexOf(s, start) + 1;
             int len = s.length();
-            tokens.add(new DecompoundToken(s, start, len));
+            tokens.add(new DecompoundToken(s, start, len, ctr));
             start += len;
         }
     }
@@ -85,9 +91,11 @@ public class DecompoundTokenFilter extends TokenFilter {
         public final CharSequence txt;
         public final int startOffset;
         public final int endOffset;
+	public final int position;
 
-        public DecompoundToken(CharSequence txt, int offset, int length) {
-            this.txt = txt;
+        public DecompoundToken(CharSequence txt, int offset, int length, int position) {
+            this.txt = txt;	  
+	    this.position = position; 
             int startOff = DecompoundTokenFilter.this.offsetAtt.startOffset();
             int endOff = DecompoundTokenFilter.this.offsetAtt.endOffset();
             if (endOff - startOff != DecompoundTokenFilter.this.termAtt.length()) {

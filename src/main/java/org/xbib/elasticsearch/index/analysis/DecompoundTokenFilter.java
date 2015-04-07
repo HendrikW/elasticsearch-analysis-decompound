@@ -48,7 +48,7 @@ public class DecompoundTokenFilter extends TokenFilter {
             restoreState(current);
             termAtt.setEmpty().append(token.txt);
             offsetAtt.setOffset(token.startOffset, token.endOffset);
-	    if (token.position == 0) {
+	    if (token.position <= 1) {
 		posIncAtt.setPositionIncrement(0);
 	    } else {
 		posIncAtt.setPositionIncrement(1);
@@ -70,12 +70,12 @@ public class DecompoundTokenFilter extends TokenFilter {
         int start = offsetAtt.startOffset();
         CharSequence term = new String(termAtt.buffer(), 0, termAtt.length());
 	int ctr = 0;
-        for (String s : decomp.decompound(term.toString())) {
-	    ctr++;
+        for (String s : decomp.decompound(term.toString())) {	   
             start = term.toString().indexOf(s, start) + 1;
             int len = s.length();
             tokens.add(new DecompoundToken(s, start, len, ctr));
             start += len;
+	    ctr++;
         }
     }
 
